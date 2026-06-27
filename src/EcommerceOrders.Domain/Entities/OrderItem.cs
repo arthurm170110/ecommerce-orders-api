@@ -1,4 +1,6 @@
-﻿namespace EcommerceOrders.Domain.Entities;
+﻿using EcommerceOrders.Domain.Common;
+
+namespace EcommerceOrders.Domain.Entities;
 
 public class OrderItem
 {
@@ -11,20 +13,40 @@ public class OrderItem
     
     private OrderItem() {}
 
-    public OrderItem(string name, decimal price, int quantity)
+    private OrderItem(
+        string name,
+        decimal price,
+        int quantity)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Product name cannot be empty.");
-        
-        if (price <= 0)
-            throw new ArgumentException("Price must be greater than zero.");
-        
-        if (quantity <= 0)
-            throw new ArgumentException("Quantity must be greater than zero.");
-        
         Id = Guid.NewGuid();
         Name = name;
         Price = price;
         Quantity = quantity;
+    }
+    
+    public static Result<OrderItem> Create(
+        string name,
+        decimal price,
+        int quantity)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return Result<OrderItem>.Failure(new Error(ErrorCode.ValidationError,
+                    "Product name cannot be empty."));
+        }
+
+        if (price <= 0)
+        {
+            return Result<OrderItem>.Failure(new Error(ErrorCode.ValidationError,
+                    "Price must be greater than zero."));
+        }
+
+        if (quantity <= 0)
+        {
+            return Result<OrderItem>.Failure(new Error(ErrorCode.ValidationError,
+                    "Quantity must be greater than zero."));
+        }
+
+        return Result<OrderItem>.Success(new OrderItem(name, price, quantity));
     }
 }
