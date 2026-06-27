@@ -7,5 +7,6 @@ public enum ErrorCode
     OrderNotFound = 3,
     InsufficientStock = 4,
     Unauthorized = 5,
-    BusinessRuleViolation = 6
+    BusinessRuleViolation = 6,
+    InternalError = 7
 }

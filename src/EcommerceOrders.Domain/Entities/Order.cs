@@ -15,15 +15,9 @@ public class Order
     public IReadOnlyList<OrderItem> Items => _items.AsReadOnly();
     
     private Order() {}
-
-    public Order(string buyer, List<OrderItem> items)
+    
+    private Order(string buyer, List<OrderItem> items)
     {
-        if (string.IsNullOrWhiteSpace(buyer))
-            throw new ArgumentException("Buyer is required.");
-
-        if (items is null || !items.Any())
-            throw new ArgumentException("An order must have at least one item.");
-
         Id = Guid.NewGuid();
         Buyer = buyer;
         Status = OrderStatus.Initiated;
@@ -32,6 +26,25 @@ public class Order
 
         SetCreated();
     }
+    public static Result<Order> Create(
+        string buyer,
+        List<OrderItem> items)
+    {
+        if (string.IsNullOrWhiteSpace(buyer))
+        {
+            return Result<Order>.Failure(new Error(ErrorCode.ValidationError,
+                    "Buyer is required."));
+        }
+
+        if (items is null || !items.Any())
+        {
+            return Result<Order>.Failure(new Error(ErrorCode.ValidationError,
+                    "An order must have at least one item."));
+        }
+
+        return Result<Order>.Success(new Order(buyer, items));
+    }
+    
     private void SetCreated()
     {
         var now = DateTime.UtcNow;
