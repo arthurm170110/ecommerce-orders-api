@@ -7,6 +7,7 @@ public class Order
     public Guid Id { get; private set; }
     public string Buyer { get; private set; }
     public OrderStatus Status { get; private set; }
+    public decimal TotalValue => _items.Sum(item => item.TotalValue);
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 

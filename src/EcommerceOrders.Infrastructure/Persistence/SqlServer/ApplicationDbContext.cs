@@ -24,6 +24,10 @@ public class ApplicationDbContext : DbContext
             builder.Property(o => o.Status)
                 .HasConversion<int>()
                 .IsRequired();
+            
+            builder.Property(o => o.TotalValue)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
 
             builder.Property(o => o.CreatedAt)
                 .IsRequired();
@@ -53,6 +57,9 @@ public class ApplicationDbContext : DbContext
 
             builder.Property(oi => oi.Price)
                 .HasColumnType("decimal(18,2)")
+                .IsRequired();
+            
+            builder.Property(oi => oi.Quantity)
                 .IsRequired();
             
             builder.Property<Guid>("OrderId");
