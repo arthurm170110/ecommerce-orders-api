@@ -1,0 +1,45 @@
+﻿version: '3.8'
+
+services:
+  # 1. Banco de Escrita (SQL Server)
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: ecommerce_sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=SenhaForte123!
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+  # 2. Banco de Leitura (MongoDB)
+  mongodb:
+    image: mongo:latest
+    container_name: ecommerce_mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  # 3. Sua API .NET 10
+  orders-api:
+    image: ecommerce-orders-api:latest
+    container_name: ecommerce_orders_api
+    build:
+      context: .
+      dockerfile: src/EcommerceOrders.API/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__SqlServer=Server=sqlserver,1433;Database=EcommerceOrdersDb;User Id=sa;Password=SenhaForte123!;TrustServerCertificate=True;
+      - ConnectionStrings__Mongo=mongodb://mongodb:27017
+      - MongoOptions__DatabaseName=EcommerceOrdersReadDb
+    depends_on:
+      - sqlserver
+      - mongodb
+
+volumes:
+  sqlserver_data:
+  mongodb_data:

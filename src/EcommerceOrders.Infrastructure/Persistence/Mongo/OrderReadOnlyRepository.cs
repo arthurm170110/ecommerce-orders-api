@@ -6,31 +6,71 @@ namespace EcommerceOrders.Infrastructure.Persistence.Mongo;
 
 public class OrderReadOnlyRepository : IOrderReadOnlyRepository
 {
-    private readonly IMongoCollection<Order> _collection;
+    private readonly IMongoCollection<OrderDocument> _collection;
 
     public OrderReadOnlyRepository(MongoDbContext context)
     {
-        _collection = context.GetCollection<Order>("orders_projections");
+        _collection = context.GetCollection<OrderDocument>("orders_projections");
     }
 
-    public Task<Order?> GetByIdAsync(Guid id) => _collection.Find(o => o.Id == id).FirstOrDefaultAsync();
+    public async Task<OrderReadModel?> GetByIdAsync(Guid id)
+    {
+        var doc = await _collection.Find(o => o.Id == id).FirstOrDefaultAsync();
+        if (doc == null) return null;
 
-    public async Task<IReadOnlyList<Order>> GetAllAsync(OrderStatus? status)
+        return MapToReadModel(doc);
+    }
+
+    public async Task<IReadOnlyList<OrderReadModel>> GetAllAsync(OrderStatus? status)
     {
         var query = status.HasValue
-            ? _collection.Find(o => o.Status == status.Value)
+            ? _collection.Find(o => o.Status == (int)status.Value) 
             : _collection.Find(_ => true);
 
-        return await query.ToListAsync();
+        var docs = await query.ToListAsync();
+        return docs.Select(MapToReadModel).ToList();
     }
 
     public Task UpsertAsync(Order order)
     {
-        var filter = Builders<Order>.Filter.Eq(o => o.Id, order.Id);
+        var document = new OrderDocument
+        {
+            Id = order.Id,
+            Buyer = order.Buyer,
+            Status = (int)order.Status,
+            TotalValue = order.TotalValue,
+            CreatedAt = order.CreatedAt,
+            UpdatedAt = order.UpdatedAt,
+            Items = order.Items.Select(i => new OrderItemDocument
+            {
+                Id = i.Id,
+                Name = i.Name,
+                Price = i.Price,
+                Quantity = i.Quantity,
+                TotalValue = i.TotalValue
+            }).ToList()
+        };
 
-        return _collection.ReplaceOneAsync(
-            filter,
-            order,
-            new ReplaceOptions { IsUpsert = true });
+        var filter = Builders<OrderDocument>.Filter.Eq(o => o.Id, document.Id);
+        return _collection.ReplaceOneAsync(filter, document, new ReplaceOptions { IsUpsert = true });
+    }
+    
+    private static OrderReadModel MapToReadModel(OrderDocument doc)
+    {
+        return new OrderReadModel
+        {
+            Id = doc.Id,
+            Buyer = doc.Buyer,
+            Status = ((OrderStatus)doc.Status).ToString(),
+            TotalValue = doc.TotalValue,
+            Items = doc.Items.Select(i => new OrderItemReadModel
+            {
+                Id = i.Id,
+                Name = i.Name,
+                Price = i.Price,
+                Quantity = i.Quantity,
+                TotalValue = i.TotalValue
+            }).ToList()
+        };
     }
 }

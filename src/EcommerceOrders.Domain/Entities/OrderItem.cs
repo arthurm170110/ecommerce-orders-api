@@ -9,7 +9,7 @@ public class OrderItem
     public decimal Price { get; private set; }
     public int Quantity { get; private set; }
     
-    public decimal TotalValue => Price * Quantity;
+    public decimal TotalValue { get; private set; }
     
     private OrderItem() {}
 
@@ -22,6 +22,7 @@ public class OrderItem
         Name = name;
         Price = price;
         Quantity = quantity;
+        TotalValue = price * quantity;
     }
     
     public static Result<OrderItem> Create(

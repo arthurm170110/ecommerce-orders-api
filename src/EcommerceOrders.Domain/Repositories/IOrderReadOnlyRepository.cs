@@ -4,7 +4,7 @@ namespace EcommerceOrders.Domain.Repositories;
 
 public interface IOrderReadOnlyRepository
 {
-    Task<Order?> GetByIdAsync(Guid id);
-    Task<IReadOnlyList<Order>> GetAllAsync(OrderStatus? status);
+    Task<OrderReadModel?> GetByIdAsync(Guid id);
+    Task<IReadOnlyList<OrderReadModel>> GetAllAsync(OrderStatus? status);
     Task UpsertAsync(Order order);
 }

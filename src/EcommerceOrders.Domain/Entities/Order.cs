@@ -7,7 +7,7 @@ public class Order
     public Guid Id { get; private set; }
     public string Buyer { get; private set; }
     public OrderStatus Status { get; private set; }
-    public decimal TotalValue => _items.Sum(item => item.TotalValue);
+    public decimal TotalValue { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
@@ -23,6 +23,7 @@ public class Order
         Status = OrderStatus.Initiated;
 
         _items.AddRange(items);
+        TotalValue = _items.Sum(item => item.TotalValue);
 
         SetCreated();
     }
@@ -75,6 +76,7 @@ public class Order
         Buyer = buyer;
         _items.Clear();
         _items.AddRange(newItems);
+        TotalValue = _items.Sum(item => item.TotalValue);
         
         SetUpdated();
         

@@ -14,6 +14,11 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        services.Configure<MongoOptions>(options =>
+        {
+            options.DatabaseName = configuration["MongoOptions:DatabaseName"] ?? "EcommerceOrdersReadDb";
+        });
+        
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("SqlServer")));
         

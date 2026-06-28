@@ -6,7 +6,7 @@ using EcommerceOrders.Domain.Repositories;
 
 namespace EcommerceOrders.Application.Services;
 
-public class OrderService
+public class OrderService : IOrderService
 {
     private readonly IOrderRepository _writeRepository;
     private readonly IOrderReadOnlyRepository _readRepository;
@@ -145,7 +145,7 @@ public class OrderService
         var orders = await _readRepository.GetAllAsync(statusFilter);
 
         var result = orders
-            .Select(MapToResponse)
+            .Select(model => MapToResponse(model))
             .ToList();
 
         return Result<IReadOnlyList<OrderResponse>>.Success(result);
@@ -159,6 +159,23 @@ public class OrderService
             order.Status.ToString(),
             order.TotalValue,
             order.Items
+                .Select(i => new OrderItemResponse(
+                    i.Id,
+                    i.Name,
+                    i.Price,
+                    i.Quantity,
+                    i.TotalValue))
+                .ToList());
+    }
+    
+    private static OrderResponse MapToResponse(OrderReadModel model)
+    {
+        return new OrderResponse(
+            model.Id,
+            model.Buyer,
+            model.Status, 
+            model.TotalValue,
+            model.Items
                 .Select(i => new OrderItemResponse(
                     i.Id,
                     i.Name,
