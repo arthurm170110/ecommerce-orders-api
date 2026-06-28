@@ -62,6 +62,10 @@ public class ApplicationDbContext : DbContext
             builder.Property(oi => oi.Quantity)
                 .IsRequired();
             
+            builder.Property(oi => oi.TotalValue)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+            
             builder.Property<Guid>("OrderId");
         });
     }
